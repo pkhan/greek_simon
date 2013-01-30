@@ -1,0 +1,137 @@
+body {
+    background-color: black;
+    color: lime;
+    font-family: "courier new";
+    font-size: 30pt;
+}
+div.container {
+    /*margin-left: auto;
+    margin-right: auto;
+    height: 100%;*/
+    height: 180px;
+    width: 684px;
+    background-color: black;
+    position: absolute;
+    top: 50%;
+    margin-top: -90px;
+    left: 50%;
+    margin-left: -342px;
+}
+div.letter_box {
+    border-color: lime;
+    display: inline-block;
+    border-width: 1px;
+    border-style: solid;
+    width:50px;
+    height:50px;
+    text-align: center;
+    font-size: 31pt;
+    margin-right: 5px;
+    /*margin-bottom: 8px;*/
+    vertical-align: top;
+    /*visibility: hidden;*/
+}
+div.box_ext {
+    /*position: relative;
+    top: 50%;
+    margin-top: -180px;
+    height: 300px;
+    /*margin-bottom: 10px;
+    height: 100px;*/
+}
+div.timer {
+    width: 100px;
+    display: inline-block;
+    height: 44px;
+    text-align: center;
+    border-color:lime;
+    border-width: 1px;
+    border-style: solid;
+    background-color: black;
+}
+div.instruction {
+    text-align: center;
+    height: 75px;
+    font-size: 30pt;
+}
+div.lime div.letter_box {
+    border-color: lime;
+    color: lime;
+}
+div.yellow div.letter_box {
+    border-color: #F3F315;
+    color: #F3F315;
+    visibility: hidden;
+}
+div.purple div.letter_box {
+    border-color: #00FFFF;
+    color: #00FFFF;
+    visibility: hidden;
+}
+div.letter_row {
+    height: 60px;
+    text-align: center;
+}
+div.rewind_line {
+    border-color: grey;
+    border-top-style: none;
+    border-left-style: none;
+    border-right-style: none;
+    border-bottom-style: solid;
+    position: fixed;
+    left: 0px;
+    right: 0px;
+}
+div.timer_ext {
+    text-align: center;
+    position: fixed;
+    height: 44px;
+    width: 100%;
+    bottom: 0px;
+    left: 0px;
+    margin-bottom: 3px;
+}
+div.letter_row div.letter_box.wrong {
+    color: red;
+    border-color: red;
+}
+div.container div.instruction.wrong {
+    color: red;
+    border-color: red;
+}
+div.container div.timer_ext div.timer.wrong {
+    color: red;
+    border-color: red;
+}
+ul.lives {
+    position: fixed;
+    display: block;
+    top: 50%;
+    margin-top: -130px;
+    border-color: lime;
+    border-width: 1px;
+    border-style: solid;
+    color: lime;
+    font-size: 30pt;
+    width: 30px;
+    padding: 0px;
+    text-align: center;
+    height: 260px;
+}
+ul.lives.one {
+    color: red;
+    border-color: red;
+}
+ul.lives.left {
+    left: 3px;
+}
+ul.lives.right {
+    right: 3px;
+}
+ul.lives li {
+    list-style-type: none;
+    height: 50px;
+}
+audio {
+    display: none;
+}
