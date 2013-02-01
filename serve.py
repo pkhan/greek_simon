@@ -17,13 +17,15 @@ template_lookup = TemplateLookup(input_encoding='utf-8',
                                  directories=[template_root])
 
 def render_template(filename):
-    if os.path.isdir(os.path.join(template_root, filename)):
+    if os.path.isdir(os.path.join(template_root, filename)) or filename == "":
+        print('set to index')
         filename = os.path.join(filename, 'index.html')
     else:
         filename = '%s' % filename
     if any(filename.lstrip('/').startswith(p) for p in blacklist_templates):
         raise httpclient.HTTPError(404)
     try:
+        #print(filename)
         return template_lookup.get_template(filename).render()
     except exceptions.TopLevelLookupException:
         raise httpclient.HTTPError(404)
