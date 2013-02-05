@@ -9,7 +9,7 @@ from tornado import httpclient
 import sys
 
 root = os.path.dirname(__file__)
-template_root = os.path.join(root)
+template_root = os.path.join(root,'web')
 blacklist_templates = ('layouts',)
 template_lookup = TemplateLookup(input_encoding='utf-8',
                                  output_encoding='utf-8',
@@ -25,17 +25,28 @@ def render_template(filename):
     if any(filename.lstrip('/').startswith(p) for p in blacklist_templates):
         raise httpclient.HTTPError(404)
     try:
-        #print(filename)
         return template_lookup.get_template(filename).render()
     except exceptions.TopLevelLookupException:
         raise httpclient.HTTPError(404)
+        
+def render_text(filename):
+    filename = os.path.join(template_root, filename)
+    print(filename)
+    if filename == "":
+        filename = "index.html"
+    f = open(filename)
+    text = f.read()
+    #print(text)
+    f.close()
+    return text
 
 def render_bin(filename):
     #print(filename + " in BIN")
-    filename = os.path.join(filename)
+    filename = os.path.join(template_root, filename)
     f = open(filename, 'rb')
-
-    return f.read()
+    binary = f.read()
+    f.close()
+    return binary
 
 class DefaultHandler(tornado.web.RequestHandler):
     def get_error_html(self, status_code, exception, **kwargs):
@@ -56,7 +67,7 @@ class MainHandler(DefaultHandler):
 
 application = tornado.web.Application([
     (r'^/(.*)$', MainHandler),
-], debug=True, static_path=os.path.join(root, 'static'))
+], debug=True, static_path=os.path.join(root, 'web/static'))
 
 if __name__ == '__main__':
     port = 80
