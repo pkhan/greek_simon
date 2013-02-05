@@ -105,9 +105,12 @@ var display_mgr = {
 var sound_mgr = {
     sounds: undefined,
     play_sound: function (x) {
-        this.stop_all();
-        if (this.sounds[x]) {
-            this.sounds[x].play();
+        try {
+            this.stop_all();
+            if (this.sounds[x]) {
+                this.sounds[x].play();
+            }
+        } catch(error) {
         }
     },
     stop_all: function () {

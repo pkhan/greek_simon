@@ -1,5 +1,5 @@
-f = open('puzz1.html')
-w = open('test.html','w')
+f = open('web/puzz1.html')
+w = open('web/test.html','w')
 
 html = {
     'css' : '<link rel="stylesheet" href="static/qunit.css">\n',
