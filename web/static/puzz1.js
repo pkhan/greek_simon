@@ -182,7 +182,7 @@ var game_mgr = {
             }
             
             for (i = num_items - 1; i > 0; i--) {
-                var rand_int = Math.floor(Math.random() * num_items);
+                var rand_int = Math.floor(Math.random() * (i + 1));
                 var temp = code[i];
                 code[i] = code[rand_int];
                 code[rand_int] = temp;
