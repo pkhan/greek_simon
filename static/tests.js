@@ -9,6 +9,7 @@ test("hello world test", function() {
 
 test("generate code", function() {
     function get_code(pool, dups) {
+        var code, num_chars, type;
         code = game_mgr.generate_code(pool, dups);
         num_chars = pool.length;
         type = 3; //number
@@ -64,7 +65,14 @@ test("add player", function() {
 test("display manager", function() {
     ok(display_mgr.instructions !== undefined, "instructions defined?");
     equal(display_mgr.rows.length, 3, "rows defined?");
-    
+    display_mgr.add_box();
+    var boxes = $('.letter_box');
+    var parents = [];
+    boxes.each(function (){
+        parents.push($(this).parent());
+    });
+    equal(boxes.length, 3, "added 3 boxes?");
+    ok(parents[0].id == 'row1' && parents[1].id == 'row2' && parents[2].id == 'row3', "boxes have correct parents?");
 });
 
 

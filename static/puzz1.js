@@ -177,13 +177,20 @@ var game_mgr = {
             for (i = 0; i < num_items; i++) {
                 code.push(pool[i]);
             }
+            
+            for (i = num_items - 1; i > 0; i--) {
+                var rand_int = Math.floor(Math.random() * num_items);
+                var temp = code[i];
+                code[i] = code[rand_int];
+                code[rand_int] = temp;
+            }
 
-            code.sort(function (a, b) {
+            /*code.sort(function (a, b) {
                 if (Math.random() < 0.5) {
                     return -1;
                 }
                 return 1;
-            });
+            });*/
         }
         return code;
     },
