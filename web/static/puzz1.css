@@ -4,6 +4,19 @@ body {
     font-family: "courier new";
     font-size: 30pt;
 }
+div.blackout {
+    background-color:black;
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    width: 100%;
+    z-index: 999;
+    visibility: hidden;
+}
+div.blackout.active {
+    visibility: visible;
+}
 div.container {
     /*margin-left: auto;
     margin-right: auto;
@@ -95,11 +108,11 @@ div.letter_row div.letter_box.wrong {
     color: red;
     border-color: red;
 }
-div.container div.instruction.wrong {
+div.instruction.wrong {
     color: red;
     border-color: red;
 }
-div.container div.timer_ext div.timer.wrong {
+div.timer_ext div.timer.wrong {
     color: red;
     border-color: red;
 }

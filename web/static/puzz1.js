@@ -31,8 +31,9 @@ var display_mgr = {
             return $(this).css('visibility') === 'hidden';
         }).first().css('visibility', 'visible');
     },
-    add_letter: function (letter, row_index, wrong) {
+    add_letter: function (letter, row_index, wrong, play_sound) {
         wrong = opt(wrong, false);
+        play_sound = opt(play_sound, true);
         var boxes, target;
         boxes = this.rows.eq(row_index).find('.letter_box');
         target = boxes.filter(function () {
@@ -42,7 +43,29 @@ var display_mgr = {
         if (wrong) {
             target.eq(0).addClass('wrong');
         }
-        sound_mgr.play_sound(mappings.greek_to_x(letter));
+        if (play_sound) {
+            sound_mgr.play_sound(mappings.greek_to_x(letter));
+        }
+    },
+    blackout: function () {
+        var blackout, self;
+        blackout = $('.blackout')
+        blackout.addClass('active');
+        setTimeout(function () {
+            blackout.removeClass('active');
+        }, 200);
+        setTimeout(function () {
+            blackout.addClass('active');
+        }, 400);
+        setTimeout(function () {
+            blackout.removeClass('active');
+        }, 600);
+        setTimeout(function () {
+            blackout.addClass('active');
+        }, 1000);
+    },
+    end_blackout: function () {
+        $('.blackout').removeClass('active');
     },
     blink: function (letter, row_index) {
         var boxes, target;
@@ -54,6 +77,7 @@ var display_mgr = {
         setTimeout(function () {
             target.css('background-color', 'inherit');
         }, 200);
+        sound_mgr.play_sound(mappings.greek_to_x(letter));
 
     },
     clear_row: function (row_index) {
@@ -123,20 +147,47 @@ var sound_mgr = {
 };
 
 $(document).ready(function () {
+    var url_vars, blackouts, i;
+    url_vars = get_url_vars();
+    game_mgr.mode = opt(url_vars['mode'], ['register'])[0];
+    blackouts = opt(url_vars['blackouts'], []);
+    for (i = 0; i < blackouts.length; i++) {
+        game_mgr.blackout_rounds.push(Number(blackouts[i]));
+    }
+    game_mgr.lives = Number(opt(url_vars['lives'], [1])[0]);
+
     display_mgr.rows = $('.letter_row');
     display_mgr.instructions = $('div.instruction')[0];
     display_mgr.update_lives(game_mgr.lives);
     timer.disp = $('.timer')[0];
     sound_mgr.sounds = document.querySelectorAll('audio.greek_audio');
+    if (game_mgr.mode === "autoregister") {
+        auto_register();
+    }
     //debug
     //display_mgr.add_box()
 
 });
 
-//possible state: pre_registration, registration, input, confirmation, wait
+function auto_register() {
+    var i, x;
+    for (i = 97; i <= 108; i++) {
+        x = mappings.input_to_x(i);
+        game_mgr.add_player(x);
+        display_mgr.add_box();
+        display_mgr.add_letter(mappings.x_to_greek(x), 0, false, false);   
+        game_mgr.state = "registration";
+        display_mgr.set_instructions("PRESS ENTER TO START");
+    }
+};
+
+//possible state: pre_registration, registration, input, confirmation, wait, end
 var game_mgr = {
+    mode: 'register', //register, autoregister
+    blackout_rounds: [], //rounds (by index) which get blacked out
     state: "pre_registration",
     players: [],
+    max_players: 12, //current limit is 12
     lives: 1,
     set_lives: function (num_lives) {
         this.lives = num_lives;
@@ -331,6 +382,7 @@ function check_state(charCode) {
                 fail_round();
             } else if (game_mgr.now_code().length === game_mgr.now_input().length) {
                 game_mgr.state = "wait";
+                display_mgr.end_blackout();
                 if (game_mgr.current_code === game_mgr.rounds - 1) {
                     do_win();
                 } else {
@@ -345,6 +397,10 @@ function check_state(charCode) {
         }
     } else if (game_mgr.state === "wait") {
         //do nothing
+    } else if (game_mgr.state === "end") {
+        if (charCode == '114') {
+            window.location.reload();
+        }
     }
 }
 
@@ -365,6 +421,11 @@ function start_round() {
     display_mgr.clear_row(current);
     game_mgr.inputs[current] = [];
     display_mgr.show_row(current);
+    
+    if (game_mgr.blackout_rounds.indexOf(current) > -1) {
+        display_mgr.blackout();
+    }
+
     display_mgr.play_code(mappings.code_to_greek(code), current);
     display_mgr.set_instructions("CODE " + (game_mgr.current_code + 1) + " TEST");
     timer.set_timer(begin_input, (game_mgr.players.length + 1) * display_mgr.per_letter);
@@ -380,6 +441,7 @@ function begin_input() {
 
 function fail_round() {
     timer.cancel();
+    display_mgr.end_blackout();
     game_mgr.lose_life();
     if (game_mgr.lives > 0) {
         display_mgr.set_instructions('INCORRECT CODE - RESTARTING');
@@ -441,11 +503,30 @@ function add_line() {
 function do_win() {
     timer.cancel();
     //server stuff here
-    display_mgr.set_instructions('ALL CODES CORRECT - PROCEED');
+    game_mgr.state = 'end';
+    display_mgr.set_instructions('YOU WIN - R TO RESTART');
 }
 
 function do_lose() {
-    display_mgr.set_instructions('INCORRECT CODE - YOU LOSE');
+    game_mgr.state = 'end';
+    display_mgr.set_instructions('YOU LOSE - R TO RESTART');
     $('div').addClass('wrong');
     //reach out to server here
+}
+
+function get_url_vars() {
+    var url_vars, url, i, var_arr, temp, temp_var;
+    url_vars = {};
+    url = location.href.replace(/.*\?/,"");
+    var_arr = url.split('&');
+
+    for (i = 0; i < var_arr.length; i++) {
+        temp = var_arr[i].split('=');
+        if (url_vars[temp[0]] === undefined) {
+            url_vars[temp[0]] = [];
+        } 
+        url_vars[temp[0]].push(temp[1]);
+    }
+
+    return url_vars;
 }
