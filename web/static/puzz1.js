@@ -155,6 +155,7 @@ $(document).ready(function () {
         game_mgr.blackout_rounds.push(Number(blackouts[i]));
     }
     game_mgr.lives = Number(opt(url_vars['lives'], [1])[0]);
+    game_mgr.b_entry = Number(opt(url_vars['b_entry'], [0]));
 
     display_mgr.rows = $('.letter_row');
     display_mgr.instructions = $('div.instruction')[0];
@@ -186,6 +187,7 @@ var game_mgr = {
     mode: 'register', //register, autoregister
     blackout_rounds: [], //rounds (by index) which get blacked out
     state: "pre_registration",
+    b_entry: 0,
     players: [],
     max_players: 12, //current limit is 12
     lives: 1,
@@ -417,7 +419,6 @@ function end_registration() {
 
 function start_round() {
     var current = game_mgr.current_code;
-    var code = game_mgr.codes[current];
     display_mgr.clear_row(current);
     game_mgr.inputs[current] = [];
     display_mgr.show_row(current);
@@ -425,14 +426,26 @@ function start_round() {
     if (game_mgr.blackout_rounds.indexOf(current) > -1) {
         display_mgr.blackout();
     }
+    
+    display_mgr.set_instructions("PREPARING CODE " + (game_mgr.current_code + 1));
+    //sound_mgr.play_prep();
+    timer.set_timer(begin_playback, 3000);
+}
+
+function begin_playback() {
+    var current = game_mgr.current_code;
+    var code = game_mgr.codes[current];
 
     display_mgr.play_code(mappings.code_to_greek(code), current);
     display_mgr.set_instructions("CODE " + (game_mgr.current_code + 1) + " TEST");
-    timer.set_timer(begin_input, (game_mgr.players.length + 1) * display_mgr.per_letter);
+    timer.set_timer(begin_input, (game_mgr.players.length + 1) * display_mgr.per_letter);        
 }
 
 function begin_input() {
     var current = game_mgr.current_code;
+    if(game_mgr.b_entry == 0) {
+        display_mgr.end_blackout();
+    }
     display_mgr.clear_row(current);
     game_mgr.state = "input";
     display_mgr.set_instructions("ENTER CODE " + (game_mgr.current_code + 1));
