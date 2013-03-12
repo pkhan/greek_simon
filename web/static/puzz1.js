@@ -128,6 +128,7 @@ var display_mgr = {
 
 var sound_mgr = {
     sounds: undefined,
+    prep_sound: undefined,
     play_sound: function (x) {
         try {
             this.stop_all();
@@ -143,6 +144,9 @@ var sound_mgr = {
             this.sounds[i].pause();
             this.sounds[i].currentTime = 0;
         }
+    },
+    play_prep: function () {
+        this.prep_sound.play();
     }
 };
 
@@ -154,14 +158,20 @@ $(document).ready(function () {
     for (i = 0; i < blackouts.length; i++) {
         game_mgr.blackout_rounds.push(Number(blackouts[i]));
     }
-    game_mgr.lives = Number(opt(url_vars['lives'], [1])[0]);
+    game_mgr.original_lives = Number(opt(url_vars['lives'], [3])[0]);
+    game_mgr.set_lives(game_mgr.original_lives);
+    game_mgr.reset_lives = Boolean(opt(url_vars['r_lives'], [false])[0]);
+    game_mgr.auto_start_mode = opt(url_vars['auto_mode'], ['confirm'])[0];
+    //game_mgr.lives = game_mgr.original_lives;
+    //game_mgr.lives = Number(opt(url_vars['lives'], [1])[0]);
     game_mgr.b_entry = Number(opt(url_vars['b_entry'], [0]));
 
     display_mgr.rows = $('.letter_row');
     display_mgr.instructions = $('div.instruction')[0];
     display_mgr.update_lives(game_mgr.lives);
     timer.disp = $('.timer')[0];
-    sound_mgr.sounds = document.querySelectorAll('audio.greek_audio');
+    sound_mgr.sounds = $('audio.greek_audio');
+    sound_mgr.prep_sound = document.getElementById('prep_sound');
     if (game_mgr.mode === "autoregister") {
         auto_register();
     }
@@ -176,9 +186,14 @@ function auto_register() {
         x = mappings.input_to_x(i);
         game_mgr.add_player(x);
         display_mgr.add_box();
-        display_mgr.add_letter(mappings.x_to_greek(x), 0, false, false);   
-        game_mgr.state = "registration";
-        display_mgr.set_instructions("PRESS ENTER TO START");
+        display_mgr.add_letter(mappings.x_to_greek(x), 0, false, false);
+        if (game_mgr.auto_start_mode === 'enter') {
+            game_mgr.state = "registration";
+            display_mgr.set_instructions("PRESS ENTER TO START");
+        } else {
+            game_mgr.state = "auto_confirm";
+            display_mgr.set_instructions("PRESS ALL INPUTS TO START (00/" + this.game_mgr.players.length + ")");
+        }
     }
 };
 
@@ -190,7 +205,10 @@ var game_mgr = {
     b_entry: 0,
     players: [],
     max_players: 12, //current limit is 12
-    lives: 1,
+    lives: 3,
+    original_lives: 3,
+    reset_lives: true,
+    auto_start_mode: 'confirm',
     set_lives: function (num_lives) {
         this.lives = num_lives;
         display_mgr.update_lives(num_lives);
@@ -213,6 +231,22 @@ var game_mgr = {
     },
     codes : [],
     inputs : [],
+    confirm_input: function (x) {
+        var msg = "PRESS ALL INPUTS TO START (";
+        if ( this.confirmed.indexOf(x) === -1) {
+            this.confirmed.push(x);
+            if (this.confirmed.length < 10) {
+                msg += "0";
+            }
+            msg += this.confirmed.length + "/" + this.players.length +")";
+            display_mgr.set_instructions(msg);
+        }
+        if (this.confirmed.length === this.players.length) {
+            return true;
+        }
+        return false;
+    },
+    confirmed : [],
     now_code: function () {
         return this.codes[this.current_code];
     },
@@ -375,6 +409,15 @@ function check_state(charCode) {
             //timer.cancel();
             end_registration();
         }
+    } else if (game_mgr.state === "auto_confirm") {
+        if (charCode >= 97 && charCode <= 108) { //a thru l 
+            display_mgr.blink(mappings.x_to_greek(x), 0);
+            if (game_mgr.confirm_input(x)) {
+                end_registration();
+            }
+        } else if (charCode >= 48 && charCode <= 57) { //0 thru 9
+            game_mgr.set_lives(charCode - 48);
+        }
     } else if (game_mgr.state === "input") {
         if (charCode >= 97 && charCode <= 108) { //a thru l 
             var correct = game_mgr.add_input(x);
@@ -389,7 +432,12 @@ function check_state(charCode) {
                     do_win();
                 } else {
                     game_mgr.current_code += 1;
-                    start_round();
+                        if(game_mgr.reset_lives) {
+                            game_mgr.set_lives(game_mgr.original_lives);
+                        }
+                    timer.cancel();
+                    setTimeout(start_round, 1000);
+                    //start_round();
                 }
             }
         }
@@ -413,7 +461,8 @@ function end_registration() {
         do_lose();
     } else {
         game_mgr.add_codes(game_mgr.rounds);
-        start_round();
+        setTimeout(start_round, 1000);
+        //start_round();
     }
 }
 
@@ -428,8 +477,8 @@ function start_round() {
     }
     
     display_mgr.set_instructions("PREPARING CODE " + (game_mgr.current_code + 1));
-    //sound_mgr.play_prep();
-    timer.set_timer(begin_playback, 3000);
+    sound_mgr.play_prep();
+    timer.set_timer(begin_playback, 2825);
 }
 
 function begin_playback() {

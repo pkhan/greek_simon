@@ -8,21 +8,32 @@
 <form id='frm' action='puzz1.html' method='get'>
 Game Mode: <br>
 <select name='mode'>
-<option value='register' selected>Players Register Inputs </option>
-<option value='autoregister'>Auto Register 12 Inputs </option>
+<option value='register' >Players Register Inputs </option>
+<option value='autoregister' selected >Auto Register 12 Inputs </option>
 </select>
+
+<p>
+Auto-Register Start Mode (does not apply to Player Registers):<br>
+<input type='radio' name='auto_mode' value='confirm' checked='true'>Players Confirm All Inputs</input><br>
+<input type='radio' name='auto_mode' value='enter'>Players Press Enter</input>
+</p>
 <p>
 Number of Starting Lives (or press a number during registration):<br>
-<input type='radio' name='lives' value='1' checked='true'> 1 </input>
+<input type='radio' name='lives' value='1'> 1 </input>
 <input type='radio' name='lives' value='2'> 2 </input>
-<input type='radio' name='lives' value='3'> 3 </input>
+<input type='radio' name='lives' value='3' checked='true'> 3 </input>
 <input type='radio' name='lives' value='4'> 4 </input>
 <input type='radio' name='lives' value='5'> 5 </input>
+<p>
+Reset Lives After Each Round?<br>
+<input type='checkbox' name='r_lives' value='true' checked='true'> Yes </input>
+</p>
+
 <p>
 Blackout Rounds (rounds played in darkness):<br>
 <input type='checkbox' name='blackouts' value='0'> First </input>
 <input type='checkbox' name='blackouts' value='1'> Second </input>
-<input type='checkbox' name='blackouts' value='2'> Third </input>
+<input type='checkbox' name='blackouts' value='2' checked='true'> Third </input>
 <p>
 Blackout Entry<br>
 <input type='radio' name='b_entry' value='0' checked='true'> End blackout, then enter code </input><br>
