@@ -165,6 +165,7 @@ $(document).ready(function () {
     //game_mgr.lives = game_mgr.original_lives;
     //game_mgr.lives = Number(opt(url_vars['lives'], [1])[0]);
     game_mgr.b_entry = Number(opt(url_vars['b_entry'], [0]));
+    game_mgr.win_code = opt(url_vars['win_code'], ['1234'])[0];
 
     display_mgr.rows = $('.letter_row');
     display_mgr.instructions = $('div.instruction')[0];
@@ -177,7 +178,6 @@ $(document).ready(function () {
     }
     //debug
     //display_mgr.add_box()
-
 });
 
 function auto_register() {
@@ -584,7 +584,7 @@ function do_win() {
     timer.cancel();
     //server stuff here
     game_mgr.state = 'end';
-    display_mgr.set_instructions('SUCCESS - CODE 1234');
+    display_mgr.set_instructions('SUCCESS - CODE ' + game_mgr.win_code);
     timer.set_timer(function() {
         window.location.reload();
     }, 30000);
