@@ -182,8 +182,8 @@ $(document).ready(function () {
 
 function auto_register() {
     var i, x;
-    for (i = 97; i <= 108; i++) {
-        x = mappings.input_to_x(i);
+    for (i = 0; i <= 8; i++) {
+        x = i;
         game_mgr.add_player(x);
         display_mgr.add_box();
         display_mgr.add_letter(mappings.x_to_greek(x), 0, false, false);
@@ -192,7 +192,7 @@ function auto_register() {
             display_mgr.set_instructions("PRESS ENTER TO START");
         } else {
             game_mgr.state = "auto_confirm";
-            display_mgr.set_instructions("PRESS ALL INPUTS TO START (00/" + this.game_mgr.players.length + ")");
+            display_mgr.set_instructions("PRESS ALL INPUTS TO START (0/" + this.game_mgr.players.length + ")");
         }
     }
 };
@@ -204,7 +204,7 @@ var game_mgr = {
     state: "pre_registration",
     b_entry: 0,
     players: [],
-    max_players: 12, //current limit is 12
+    max_players: 9, //current limit is 10
     lives: 3,
     original_lives: 3,
     reset_lives: true,
@@ -235,9 +235,6 @@ var game_mgr = {
         var msg = "PRESS ALL INPUTS TO START (";
         if ( this.confirmed.indexOf(x) === -1) {
             this.confirmed.push(x);
-            if (this.confirmed.length < 10) {
-                msg += "0";
-            }
             msg += this.confirmed.length + "/" + this.players.length +")";
             display_mgr.set_instructions(msg);
         }
@@ -252,6 +249,12 @@ var game_mgr = {
     },
     now_input: function () {
         return this.inputs[this.current_code];
+    },
+    print_code: function() {
+        var output = this.codes[this.current_code].map(function(x) {
+            return mappings.x_to_num[x];
+        });
+        return output;
     },
     generate_code: function (pool, dups) {
         dups = opt(dups, false);
@@ -311,6 +314,28 @@ var game_mgr = {
 };
 
 var mappings = {
+    numpad_map: {
+        49: 6, // 1 G
+        50: 7, // 2 H
+        51: 8, // 3 I
+        52: 3, // 4 D
+        53: 4, // 5 E
+        54: 5, // 6 F
+        55: 0, // 7 A
+        56: 1, // 8 B
+        57: 2 // 9 C
+    },
+    x_to_num: {
+        6: 1, //G
+        7: 2, //H
+        8: 3, //I
+        3: 4, //D
+        4: 5, //E
+        5: 6, //F
+        0: 7, //A
+        1: 8, //B
+        2: 9 //C
+    },
 //all mappings are based on an a-z code, a being 0 and alpha
     x_to_greek: function (index) { //0 is lowercase alpha
         return String.fromCharCode(index + 945);
@@ -319,10 +344,12 @@ var mappings = {
         return letter.charCodeAt(0) - 945;
     },
     input_to_alpha: function (charCode) {
+        //deprecated, translate to X val first
         return String.fromCharCode(charCode);
     },
     input_to_x: function (charCode) {
-        return charCode - 97;
+        // return charCode - 97;
+        return this.numpad_map[charCode];
     },
     code_to_greek: function (code) {
         var i, greek_code;
@@ -385,41 +412,32 @@ $(document).keypress(function (evt) {
 });
 
 function check_state(charCode) {
-    console.log(charCode);
     var x = mappings.input_to_x(charCode);
     if (game_mgr.state === "pre_registration") {
-        if (charCode >= 49 && charCode <= 57) { //1 thru 9
-            game_mgr.set_lives(charCode - 48);
-        } else {
-            display_mgr.set_instructions("REGISTER ALL INPUTS");
-            game_mgr.state = "registration";
-            //timer.set_timer(end_registration, 10000);
-        }
+        display_mgr.set_instructions("REGISTER ALL INPUTS");
+        game_mgr.state = "registration";
+        //timer.set_timer(end_registration, 10000);
     } else if (game_mgr.state === "registration") {
-        if (charCode >= 97 && charCode <= 108) { //a thru l 
+        if (charCode >= 49 && charCode <= 57) { //a thru l 
             if (game_mgr.add_player(x)) {
                 display_mgr.add_box();
                 display_mgr.add_letter(mappings.x_to_greek(x), 0);
             } else {
                 display_mgr.blink(mappings.x_to_greek(x), 0);
             }
-        } else if (charCode >= 48 && charCode <= 57) { //0 thru 9
-            game_mgr.set_lives(charCode - 48);
         } else if (charCode === 13) {
             //timer.cancel();
             end_registration();
         }
     } else if (game_mgr.state === "auto_confirm") {
-        if (charCode >= 97 && charCode <= 108) { //a thru l 
+        if (charCode >= 49 && charCode <= 57) { //a thru l 
             display_mgr.blink(mappings.x_to_greek(x), 0);
             if (game_mgr.confirm_input(x)) {
                 end_registration();
             }
-        } else if (charCode >= 48 && charCode <= 57) { //0 thru 9
-            game_mgr.set_lives(charCode - 48);
         }
     } else if (game_mgr.state === "input") {
-        if (charCode >= 97 && charCode <= 108) { //a thru l 
+        if (charCode >= 49 && charCode <= 57) { //a thru l 
             var correct = game_mgr.add_input(x);
             display_mgr.add_letter(mappings.x_to_greek(x), game_mgr.current_code, !correct);
             if (!correct) {
@@ -442,15 +460,15 @@ function check_state(charCode) {
             }
         }
     } else if (game_mgr.state === "confirmation") {
-        if (charCode >= 97 && charCode <= 108) {
+        if (charCode >= 49 && charCode <= 57) {
             input_letter(charCode);
         }
     } else if (game_mgr.state === "wait") {
         //do nothing
     } else if (game_mgr.state === "end") {
-        if (charCode == '114') {
-            window.location.reload();
-        }
+        // if (charCode == '114') {
+        //     window.location.reload();
+        // }
     }
 }
 
@@ -566,13 +584,19 @@ function do_win() {
     timer.cancel();
     //server stuff here
     game_mgr.state = 'end';
-    display_mgr.set_instructions('YOU WIN - R TO RESTART');
+    display_mgr.set_instructions('SUCCESS - CODE 1234');
+    timer.set_timer(function() {
+        window.location.reload();
+    }, 30000);
 }
 
 function do_lose() {
     game_mgr.state = 'end';
-    display_mgr.set_instructions('YOU LOSE - R TO RESTART');
+    display_mgr.set_instructions('FAILURE');
     $('div').addClass('wrong');
+    timer.set_timer(function() {
+        window.location.reload();
+    }, 30000);
     //reach out to server here
 }
 
