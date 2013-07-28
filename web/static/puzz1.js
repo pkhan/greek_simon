@@ -154,6 +154,7 @@ $(document).ready(function () {
     var url_vars, blackouts, i;
     url_vars = get_url_vars();
     game_mgr.mode = opt(url_vars['mode'], ['register'])[0];
+    game_mgr.original_mode = game_mgr.mode;
     blackouts = opt(url_vars['blackouts'], []);
     for (i = 0; i < blackouts.length; i++) {
         game_mgr.blackout_rounds.push(Number(blackouts[i]));
@@ -179,6 +180,33 @@ $(document).ready(function () {
     //debug
     //display_mgr.add_box()
 });
+
+function reset() {
+    timer.cancel();
+    $('*').attr('style', '');
+    $('.letter_row').empty();
+    $('div').removeClass('wrong');
+    display_mgr.clear_row(0);
+    display_mgr.clear_row(1);
+    display_mgr.clear_row(2);
+
+    game_mgr.state = "pre_registration";
+    game_mgr.players = [];
+    game_mgr.codes = [];
+    game_mgr.current_code = 0;
+
+    game_mgr.mode = game_mgr.original_mode;
+    game_mgr.confirmed = [];
+
+    game_mgr.set_lives(game_mgr.original_lives);
+
+    if(game_mgr.mode === 'autoregister') {
+        auto_register();
+    } else {
+        display_mgr.set_instructions("PRESS ANY KEY TO START");
+    }
+
+}
 
 function auto_register() {
     var i, x;
@@ -586,7 +614,7 @@ function do_win() {
     game_mgr.state = 'end';
     display_mgr.set_instructions('SUCCESS - CODE ' + game_mgr.win_code);
     timer.set_timer(function() {
-        window.location.reload();
+        reset();
     }, 30000);
 }
 
@@ -595,7 +623,7 @@ function do_lose() {
     display_mgr.set_instructions('FAILURE');
     $('div').addClass('wrong');
     timer.set_timer(function() {
-        window.location.reload();
+        reset();
     }, 30000);
     //reach out to server here
 }
